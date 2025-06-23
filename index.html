@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -321,3 +322,328 @@
   </script>
 </body>
 </html>
+=======
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cosmic Explorer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik+Glitch&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: black;
+      font-family: 'Segoe UI', sans-serif;
+      cursor: none;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      bottom: -220px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 70%;
+      height: 70%;
+      background: url('r_earth.jpg') no-repeat center center;
+      background-size: contain;
+      opacity: 0.8;
+      z-index: -1;
+    }
+
+    .line {
+      position: absolute;
+      background-color: rgba(255, 255, 255, 0.15);
+      pointer-events: none;
+    }
+    .horizontal { width: 100%; height: 1px; }
+    .vertical { width: 1px; height: 100%; }
+
+    .target {
+      position: absolute;
+      width: 30px;
+      height: 30px;
+      background: radial-gradient(circle, #ffd700ff, #ffd70022);
+      border-radius: 50%;
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.8), 0 0 40px rgba(255, 215, 0, 0.6);
+      pointer-events: none;
+      transform: none;
+    }
+    .target::before {
+      content: "";
+      position: absolute;
+      width: 15px;
+      height: 15px;
+      background: rgba(255, 215, 0, 0.9);
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .tag {
+      position: absolute;
+      color: #bdf0ff;
+      font-size: 16px;
+      padding: 6px 12px;
+      background: rgba(78, 205, 196, 0.1);
+      border-radius: 8px;
+      pointer-events: none;
+      transform: none;
+      transition: opacity 0.4s ease;
+    }
+
+    .planet {
+      position: absolute;
+      pointer-events: all;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      mix-blend-mode: screen;
+    }
+
+    .scoreboard {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 54px;
+      font-family: 'Rubik Glitch', sans-serif !important;
+      font-weight: 100;
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      padding: 12px 24px;
+      border-radius: 12px;
+      color: #ffd700;
+      pointer-events: none;
+      z-index: 9999;
+      text-shadow: 0 0 5px rgba(255, 215, 0, 0.8);
+    }
+
+    .star {
+      position: absolute;
+      width: 17px;
+      height: 17px;
+      background: white;
+      mix-blend-mode: screen;
+      pointer-events: none;
+    }
+
+    .success-message {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 48px;
+      font-family: 'Rubik Glitch', sans-serif !important;
+      font-weight: 100;
+      color: #00ff00;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 20px 40px;
+      border-radius: 10px;
+      text-align: center;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+  <div class="line horizontal"></div>
+  <div class="line vertical"></div>
+  <div class="target"></div>
+  <div class="earth-circle"></div>
+  <div class="success-message">SUCCESS!</div>
+  <audio id="success-sound" src="sound.mp3" preload="auto"></audio>
+  <span class="tag">Cosmic Explorer</span>
+  <div class="game-over">GAME OVER</div>
+
+  <script>
+    const vertical = document.querySelector('.vertical');
+    const horizontal = document.querySelector('.horizontal');
+    const target = document.querySelector('.target');
+    const tag = document.querySelector('.tag');
+    let movedOnce = false;
+
+    // 마우스 이벤트 핸들러
+    document.addEventListener('mousemove', (e) => {
+      const x = e.clientX;
+      const y = e.clientY;
+
+      vertical.style.transform = `translateX(${x}px)`;
+      horizontal.style.transform = `translateY(${y}px)`;
+      target.style.transform = `translate(${x - 40}px, ${y - 40}px)`;
+
+      // 십자선과 포인터의 중앙 맞춤
+      const targetRect = target.getBoundingClientRect();
+      const targetHalfWidth = targetRect.width / 2;
+      const targetHalfHeight = targetRect.height / 2;
+      
+      target.style.transform = `translate(${x - targetHalfWidth}px, ${y - targetHalfHeight}px)`;
+
+      if (!movedOnce) {
+        movedOnce = true;
+        tag.style.opacity = 1;
+      }
+
+      tag.innerHTML = `${x}px, ${y}px`;
+      tag.style.transform = `translate(${x + 20}px, ${y - 30}px)`;
+    });
+
+    // 행성 생성
+    const createPlanets = (count) => {
+      for (let i = 0; i < count; i++) {
+        const planet = document.createElement('div');
+        planet.classList.add('planet');
+
+        // 랜덤한 이미지 선택
+        const rockImages = ['rock1.png', 'rock2.png', 'rock3.png'];
+        const randomImage = rockImages[Math.floor(Math.random() * rockImages.length)];
+        planet.style.backgroundImage = `url(${randomImage})`;
+        planet.style.backgroundSize = 'cover';
+        planet.style.backgroundPosition = 'center';
+        planet.style.backgroundRepeat = 'no-repeat';
+
+        // 랜덤한 크기 설정
+        const size = Math.random() * 65 + 39; // 39~104 사이의 크기
+        planet.style.width = `${size}px`;
+        planet.style.height = `${size}px`;
+        planet.style.opacity = 0.8 + Math.random() * 0.2;
+
+        // 초기 위치 설정
+        planet.style.top = `${Math.random() * window.innerHeight}px`;
+        planet.style.left = `${Math.random() * window.innerWidth}px`;
+        document.body.appendChild(planet);
+
+        // 행성 애니메이션
+        gsap.to(planet, {
+          x: (Math.random() - 0.5) * 1200,
+          y: (Math.random() - 0.5) * 1000,
+          scale: Math.random() * 0.5 + 0.8,
+          rotation: 360 * Math.random(),
+          duration: Math.random() * 5 + 3,
+          repeat: -1,
+          yoyo: true,
+          ease: "power1.inOut"
+        });
+      }
+    };
+
+    // 별 생성
+    const createStars = (count) => {
+      for (let i = 0; i < count; i++) {
+        const star = document.createElement('div');
+        star.classList.add('star');
+
+        const size = Math.random() * 2 + 1;
+        star.style.width = `${size}px`;
+        star.style.height = `${size}px`;
+        star.style.opacity = 0.5 + Math.random() * 0.5;
+
+        star.style.top = `${Math.random() * window.innerHeight}px`;
+        star.style.left = `${Math.random() * window.innerWidth}px`;
+        document.body.appendChild(별);
+
+        // 별의 움직임
+        gsap.to(star, {
+          y: '+=100',
+          x: `+=${(Math.random() - 0.5) * 50}`,
+          opacity: 0.3 + Math.random() * 0.7,
+          duration: Math.random() * 4 + 2,
+          repeat: -1,
+          yoyo: true,
+          ease: "sine.inOut"
+        });
+      }
+    };
+
+    // 우주 배경 효과
+    const createSpaceBackground = () => {
+      // 흐린 별
+      for (let i = 0; i < 100; i++) {
+        const star = document.createElement('div');
+        star.classList.add('star');
+        star.style.opacity = 0.1;
+        star.style.width = '1px';
+        star.style.height = '1px';
+        star.style.top = `${Math.random() * window.innerHeight}px`;
+        star.style.left = `${Math.random() * window.innerWidth}px`;
+        document.body.appendChild(별);
+      }
+
+      // 빛나는 별
+      createStars(50);
+
+      // 행성
+      createPlanets(10);
+    };
+
+    // 점수 표시
+    const scoreDisplay = document.createElement('div');
+    scoreDisplay.className = 'scoreboard';
+    scoreDisplay.innerHTML = 'Score: <span id="score">0</span>';
+    document.body.appendChild(scoreDisplay);
+
+    let score = 0;
+
+    const successMessage = document.querySelector('.success-message');
+
+    function updateScore(change) {
+      score += change;
+      document.getElementById('score').textContent = score;
+
+      // 100점마다 성공 메시지 표시
+      if (score % 100 === 0 && score > 0) {
+        // 성공 효과음 재생
+        const successSound = document.getElementById('success-sound');
+        successSound.currentTime = 0;
+        successSound.play();
+        
+        successMessage.style.opacity = 1;
+        setTimeout(() => {
+          successMessage.style.opacity = 0;
+        }, 3000);
+      }
+    }
+
+    // 행성 클릭 이벤트
+    document.addEventListener('click', (e) => {
+      const planet = e.target.closest('.planet');
+      if (planet) {
+        updateScore(10);
+        // 멋진 사라짐 효과
+        gsap.timeline()
+          .to(planet, {
+            scale: 1.2,
+            opacity: 0.8,
+            duration: 0.1,
+            ease: 'power2.out'
+          })
+          .to(planet, {
+            scale: 0,
+            opacity: 0,
+            duration: 0.2,
+            ease: 'power2.in'
+          }, '-=0.1')
+          .then(() => {
+            planet.remove();
+            // 새로운 행성 생성
+            createPlanets(1);
+          });
+      }
+    });
+
+    // 초기화
+    createPlanets(30);
+    createStars(200);
+    createSpaceBackground();
+  </script>
+</body>
+</html>
+>>>>>>> db5a30a87c51149d616ba345f63cd640e36b99d3
